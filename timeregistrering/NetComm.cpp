@@ -4,6 +4,9 @@
 #include <WiFiClient.h>
 
 
+NetComm::NetComm(){
+}
+
 void NetComm::Initialize(DataStorage* _data){
   this->_dataStorage = _data;
 
@@ -31,22 +34,18 @@ String NetComm::GetConnectionStatusFormatted(){
 }
 
 bool NetComm::TryConnectWiFi() {  
-    WifiConfig* c = _dataStorage->GetWifiConnectionData();
+    WifiConfig c = _dataStorage->GetWifiConnectionData();
     Serial.println("Attempting to connect to Wifi.");
-  if(strlen(c->ssid) == 0){
+  if(c.ssid.length() == 0){
     Serial.println("!!!!!!!!!!! Cannot connect to wifi. Wifi config is empty.");
     Serial.println("    ");
     return false;
   }
 
-  Serial.println(c->ssid);
-  Serial.println(c->password);
+  Serial.println(c.ssid);
+  Serial.println(c.password);
 
-  WiFi.begin(c->ssid, c->password);
-
-
-
-
+  WiFi.begin(c.ssid.c_str(), c.password.c_str());
 
   // Wait for connection
   int attemptCounter = 1;
@@ -104,12 +103,12 @@ bool NetComm::TryConnectWiFi() {
 // }
 
 bool NetComm::TryConnectHotspot() {
-  WifiConfig* _hotSpotData = _dataStorage->GetHotspotConnectionData();
+  WifiConfig _hotSpotData = _dataStorage->GetHotspotConnectionData();
   Serial.println("Attempting to connect to Hotspot.");
-   Serial.println(_hotSpotData->ssid);
-  Serial.println(_hotSpotData->password);
+   Serial.println(_hotSpotData.ssid);
+  Serial.println(_hotSpotData.password);
 
-  WiFi.begin(_hotSpotData->ssid, _hotSpotData->password);
+  WiFi.begin(_hotSpotData.ssid.c_str(), _hotSpotData.password.c_str());
 
   // Wait for connection
   int attemptCounter = 1;
@@ -130,41 +129,6 @@ bool NetComm::TryConnectHotspot() {
     return false;
   }
 }
-
-// void NetComm::SendWifiDetailsRequest() {
-//   Serial.println("Send GET");
-//   if (WiFi.status() != WL_CONNECTED) {
-//     Serial.println("Cannot send GET request. Connection not active.");
-//     return;
-//   }
-//     WiFiClient client;
-    
-//     if (client.connect("10.108.131.98", 5001)) {  // Server port 80 for HTTP
-//     Serial.println("Connected to server");
-
-//     // Send HTTP GET request
-//     client.println("GET /api/arduino/getunixtimestamp HTTP/1.1");
-//     client.println("Host: 10.108.131.98:5001"); // Replace with your server's host
-//     client.println("Connection: close");
-//     client.println();  // End of the request
-
-//     // Wait for a response from the server
-//     while (client.connected() || client.available()) {
-//       if (client.available()) {
-//         String line = client.readStringUntil('\n'); // Read the response
-//         Serial.println(line);  // Print the response to Serial Monitor
-//       }
-//     }
-
-//     // Close the connection
-//     client.stop();
-//     Serial.println("Disconnected from server");
-//   } else {
-//     Serial.println("Connection to server failed");
-//   }
-  
-
-// }
 
 WifiConfig NetComm::SendWifiDetailsRequest() {
   Serial.println("Send GET");

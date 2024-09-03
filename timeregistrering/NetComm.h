@@ -14,6 +14,11 @@
 class NetComm
 {
   public:
+      /**
+    * Constructor
+
+    */
+    NetComm();
     void Initialize(DataStorage* _data);
     int GetConnectionStatus();
     String GetConnectionStatusFormatted();
