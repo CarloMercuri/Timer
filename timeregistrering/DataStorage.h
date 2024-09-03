@@ -10,12 +10,6 @@ struct ButtonMsg {
   char timestamp[19];
 };
 
-struct WiFiConnectionData {
-  char* ssid;  
-  char* password;
-
-  WiFiConnectionData(char* ssid, char* password) : ssid(ssid), password(password) {} 
-};
 
 class DataStorage
 {
