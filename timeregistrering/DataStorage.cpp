@@ -8,23 +8,23 @@ void DataStorage::Initialize(int eeprom_size, uint16_t msg_index){
   MESSAGES_BLOCKS_START = msg_index;
   //MESSAGES_CURRENT_INDEX = this->FindMessagesCurrentLocation();
   MSG_DATA_SIZE = sizeof(ButtonMsg);
-  _hotspotData = new WifiConfig("", HOTSPOT_SSID, HOTSPOT_PW);
-  _wifiData = new WifiConfig("", "", "");
+  //_hotspotData = new WifiConfig("", HOTSPOT_SSID, HOTSPOT_PW);
+  //_wifiData = new WifiConfig("", "", "");
 }
 
-WifiConfig* DataStorage::GetHotspotConnectionData(){
-  return this->_hotspotData;
+WifiConfig DataStorage::GetHotspotConnectionData(){
+  return _hotspotData;
 }
 
-WifiConfig* DataStorage::GetWifiConnectionData(){
+WifiConfig DataStorage::GetWifiConnectionData(){
   this->readWifiData();
   return _wifiData;
 }
 
-void DataStorage::saveWifiData(WifiConfig* config){
+void DataStorage::saveWifiData(WifiConfig config){
 // Get the lengths of the username and password
-  uint8_t ssid_len = strlen(config->ssid);
-  uint8_t password_len = strlen(config->password);
+  uint8_t ssid_len = config.ssid.length();
+  uint8_t password_len = config.password.length();
 
   // Ensure lengths are within the maximum allowed limits
   if (ssid_len > SSID_MAX_LEN || password_len > PASSWORD_MAX_LEN) {
@@ -37,7 +37,7 @@ void DataStorage::saveWifiData(WifiConfig* config){
 
   // Write the username to EEPROM starting at address 1
   for (int i = 0; i < ssid_len; i++) {
-    EEPROM.write(1 + i, config->ssid[i]);
+    EEPROM.write(1 + i, config.ssid[i]);
   }
 
   // Write the length of the password to EEPROM after the username
@@ -45,11 +45,11 @@ void DataStorage::saveWifiData(WifiConfig* config){
 
   // Write the password to EEPROM after the password length byte
   for (int i = 0; i < password_len; i++) {
-    EEPROM.write(1 + ssid_len + 1 + i, config->password[i]);
+    EEPROM.write(1 + ssid_len + 1 + i, config.password[i]);
   }
 }
 
- WifiConfig* DataStorage::readWifiData(){
+ WifiConfig DataStorage::readWifiData(){
   // Read the length of the ssid from EEPROM
   uint8_t ssid_len = EEPROM.read(0);
   Serial.print("SSID_LEN");
@@ -88,15 +88,16 @@ void DataStorage::saveWifiData(WifiConfig* config){
   }
   password[password_len] = '\0';  // Null-terminate the string
 
-
-  
-  _wifiData->ssid = ssid;
-  _wifiData->password = password;
+  String ssid_string(ssid);
+  String pw_string(password);
+  //_wifiData = new WifiConfig("", ssid, password);
+  _wifiData.ssid = ssid_string;
+  _wifiData.password = pw_string;
   Serial.println("           ");
   Serial.print("Saved SSID: ");
-  Serial.println(_wifiData->ssid);
+  Serial.println(_wifiData.ssid);
   Serial.print("Saved Password: ");
-  Serial.println(_wifiData->password);
+  Serial.println(_wifiData.password);
   Serial.println("           ");
 
 

@@ -1,11 +1,11 @@
 #pragma once
 
 struct WifiConfig {
-  char* ssid;
-  char* password;
-  char* serialNumber;
+  String ssid;
+  String password;
+  String serialNumber;
 
-  WifiConfig(char* serialNumber, char* ssid, char* password) : serialNumber(serialNumber), ssid(ssid), password(password) {} 
+  WifiConfig(String serialNumber, String ssid, String password) : serialNumber(serialNumber), ssid(ssid), password(password) {} 
 };
 
 #define SSID_MAX_LEN 30
