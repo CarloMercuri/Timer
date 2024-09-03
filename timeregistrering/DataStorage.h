@@ -23,12 +23,12 @@ class DataStorage
     void Initialize(int eeprom_size, uint16_t messages_index);
     void writeMessageData(const ButtonMsg &data);
     void saveWifiData(WifiConfig* config);
-    WifiConfig readWifiData();
+    WifiConfig* readWifiData();
     void ResetEeprom();
     uint16_t FindMessagesCurrentLocation();
     ButtonMsg readMessage();
-    WiFiConnectionData* GetHotspotConnectionData();
-    // WiFiConnectionData* GetWifiConnectionData();
+    WifiConfig* GetHotspotConnectionData();
+    WifiConfig* GetWifiConnectionData();
     
   private:
     uint16_t EEPROM_SIZE; // Replace with the size of your EEPROM
@@ -37,7 +37,7 @@ class DataStorage
     uint16_t MESSAGES_CURRENT_INDEX;
     size_t MSG_DATA_SIZE;
     int DATA_SIZE; // Size of the struct
-    WiFiConnectionData *_wifiData;
-    WiFiConnectionData *_hotspotData;
+    WifiConfig *_wifiData;
+    WifiConfig *_hotspotData;
 };
 

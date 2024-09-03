@@ -30,18 +30,23 @@ String NetComm::GetConnectionStatusFormatted(){
   }
 }
 
-bool NetComm::TryConnectWiFi(WifiConfig c) {
+bool NetComm::TryConnectWiFi() {  
+    WifiConfig* c = _dataStorage->GetWifiConnectionData();
     Serial.println("Attempting to connect to Wifi.");
-  if(strlen(c.ssid) == 0){
+  if(strlen(c->ssid) == 0){
     Serial.println("!!!!!!!!!!! Cannot connect to wifi. Wifi config is empty.");
     Serial.println("    ");
     return false;
   }
 
-  Serial.println(c.ssid);
-  Serial.println(c.password);
+  Serial.println(c->ssid);
+  Serial.println(c->password);
 
-  WiFi.begin(c.ssid, c.password);
+  WiFi.begin(c->ssid, c->password);
+
+
+
+
 
   // Wait for connection
   int attemptCounter = 1;
@@ -99,8 +104,11 @@ bool NetComm::TryConnectWiFi(WifiConfig c) {
 // }
 
 bool NetComm::TryConnectHotspot() {
-  WiFiConnectionData* _hotSpotData = _dataStorage->GetHotspotConnectionData();
+  WifiConfig* _hotSpotData = _dataStorage->GetHotspotConnectionData();
   Serial.println("Attempting to connect to Hotspot.");
+   Serial.println(_hotSpotData->ssid);
+  Serial.println(_hotSpotData->password);
+
   WiFi.begin(_hotSpotData->ssid, _hotSpotData->password);
 
   // Wait for connection
@@ -162,10 +170,7 @@ WifiConfig NetComm::SendWifiDetailsRequest() {
   Serial.println("Send GET");
   if (WiFi.status() != WL_CONNECTED) {
     Serial.println("Cannot send GET request. Connection not active.");
-    WifiConfig config;
-    config.serialNumber = "";
-    config.ssid = "";
-    config.password =  "";
+    WifiConfig config("","","");
     return config;
   }
     WiFiClient client;
@@ -219,14 +224,11 @@ WifiConfig NetComm::SendWifiDetailsRequest() {
     if (error) {
       Serial.print(F("deserializeJson() failed: "));
       Serial.println(error.f_str());
-      WifiConfig config;
-    config.serialNumber = "";
-    config.ssid = "";
-    config.password =  "";
+      WifiConfig config("","","");
     return config;
     }
 
-    WifiConfig config;
+
 
     // Convert JSON values to Strings first
     String serialNumberStr = doc["serialNumber"].as<String>();
@@ -234,10 +236,7 @@ WifiConfig NetComm::SendWifiDetailsRequest() {
     String passwordStr = doc["password"].as<String>();
 
     // Allocate memory for char* and copy the content
-    config.serialNumber = strdup(serialNumberStr.c_str());
-    config.ssid = strdup(ssidStr.c_str());
-    config.password = strdup(passwordStr.c_str());
-
+    WifiConfig config(strdup(serialNumberStr.c_str()), strdup(ssidStr.c_str()), strdup(passwordStr.c_str()));
     return config;
     // // Print the parsed data to Serial Monitor
     // Serial.println("Parsed Wifi Config:");
@@ -248,10 +247,7 @@ WifiConfig NetComm::SendWifiDetailsRequest() {
    
   } else {
     Serial.println("Connection to server failed");
-    WifiConfig config;
-    config.serialNumber = "";
-    config.ssid = "";
-    config.password =  "";
+    WifiConfig config("","","");
     return config;
   }
   
@@ -358,7 +354,7 @@ WifiConfig NetComm::SendWifiDetailsRequest() {
 
 //     // // Free resources
 //     // http.end();
-  
+
 
 // }
 

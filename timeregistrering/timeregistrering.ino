@@ -77,9 +77,9 @@ void HandleConnectedWifi(){
 void HandleNoConnection() {
   _mainLed.SetColor(255, 0, 0);
   Serial.println("------- State: HandleNoConnection");
-  WifiConfig fromEeprom = _data.readWifiData();
+  // WifiConfig* fromEeprom = _data.readWifiData();
 
-  if(!_comm.TryConnectWiFi(fromEeprom)){
+  if(!_comm.TryConnectWiFi()){
     _comm.TryConnectHotspot();
   }
 }
@@ -87,10 +87,10 @@ void HandleNoConnection() {
 void HandleConnectedHotspot() {
   _mainLed.SetColor(255, 255, 0);
     Serial.println("------- State: HandleConnectedHotspot");
-  WifiConfig fromEeprom = _data.readWifiData();
+  WifiConfig* fromEeprom = _data.readWifiData();
 
-  if(strlen(fromEeprom.ssid) > 0){ // we have wifi saved locally
-     _comm.TryConnectWiFi(fromEeprom);
+  if(strlen(fromEeprom->ssid) > 0){ // we have wifi saved locally
+     _comm.TryConnectWiFi();
    
   } else {
     // We have no locally saved wifi data, but we are connected to the hotspot.

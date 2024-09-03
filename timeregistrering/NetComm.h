@@ -17,7 +17,7 @@ class NetComm
     void Initialize(DataStorage* _data);
     int GetConnectionStatus();
     String GetConnectionStatusFormatted();
-    bool TryConnectWiFi(WifiConfig c);
+    bool TryConnectWiFi();
     bool TryConnectHotspot();
     WifiConfig SendWifiDetailsRequest();
     

@@ -8,11 +8,17 @@ void DataStorage::Initialize(int eeprom_size, uint16_t msg_index){
   MESSAGES_BLOCKS_START = msg_index;
   //MESSAGES_CURRENT_INDEX = this->FindMessagesCurrentLocation();
   MSG_DATA_SIZE = sizeof(ButtonMsg);
-  _hotspotData = new WiFiConnectionData(HOTSPOT_SSID, HOTSPOT_PW);
+  _hotspotData = new WifiConfig("", HOTSPOT_SSID, HOTSPOT_PW);
+  _wifiData = new WifiConfig("", "", "");
 }
 
-WiFiConnectionData* DataStorage::GetHotspotConnectionData(){
+WifiConfig* DataStorage::GetHotspotConnectionData(){
   return this->_hotspotData;
+}
+
+WifiConfig* DataStorage::GetWifiConnectionData(){
+  this->readWifiData();
+  return _wifiData;
 }
 
 void DataStorage::saveWifiData(WifiConfig* config){
@@ -43,16 +49,13 @@ void DataStorage::saveWifiData(WifiConfig* config){
   }
 }
 
- WifiConfig DataStorage::readWifiData(){
+ WifiConfig* DataStorage::readWifiData(){
   // Read the length of the ssid from EEPROM
   uint8_t ssid_len = EEPROM.read(0);
   Serial.print("SSID_LEN");
   Serial.println(ssid_len);
   if(ssid_len == 0xff){    
-    WifiConfig t;
-    t.ssid = "";
-    t.password = "";
-    return t;
+    return _wifiData;
   }
 
   // Ensure the length is within the expected range
@@ -86,18 +89,18 @@ void DataStorage::saveWifiData(WifiConfig* config){
   password[password_len] = '\0';  // Null-terminate the string
 
 
-  WifiConfig c;
-  c.ssid = ssid;
-  c.password = password;
+  
+  _wifiData->ssid = ssid;
+  _wifiData->password = password;
   Serial.println("           ");
   Serial.print("Saved SSID: ");
-  Serial.println(c.ssid);
+  Serial.println(_wifiData->ssid);
   Serial.print("Saved Password: ");
-  Serial.println(c.password);
+  Serial.println(_wifiData->password);
   Serial.println("           ");
 
 
-  return c;
+  return _wifiData;
 
  }
 
