@@ -1,2 +1,2 @@
-#define HOTSPOT_SSID "AndroidAP"
-#define HOTSPOT_PW "huxk3138"
+#define HOTSPOT_SSID "Mads"
+#define HOTSPOT_PW "mads0810"

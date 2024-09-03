@@ -3,7 +3,6 @@
 #include <Arduino.h>
 #include <WiFiClient.h>
 
-
 NetComm::NetComm(){
 }
 
@@ -219,14 +218,73 @@ WifiConfig NetComm::SendWifiDetailsRequest() {
 }
 
 
+int NetComm::SendButtonEventRequest(int id , int unixTimestamp) {
+  Serial.println("Send POST");
 
+    WiFiClient client;
+    
+    if (client.connect("192.168.1.36", 5001)) {  
+    Serial.println("Connected to server");
 
+    // Send HTTP GET request
+    client.println("POST /api/web/RegisterTime/KUF-XEI-4D35 HTTP/1.1");
+    client.println("Host: 192.168.1.36:5001"); // Replace with your server's host
+    client.println("Connection: close");
+    client.println();  // End of the request
 
+    // Wait for a response from the server
+    // Wait for a response from the server
+  int responseCode = -1;  // Initialize with an invalid code
+  String responseBody = "";
 
+  bool isBody = false;
 
+  // Wait for a response from the server
+  while (client.connected()) {
+    String line = client.readStringUntil('\n');
+    line.trim();  // Remove any extra white space or line breaks
 
+    // Check for the response status line (e.g., "HTTP/1.1 200 OK")
+   if (line.startsWith("HTTP/")) {
+      int firstSpaceIndex = line.indexOf(' ');
+      int secondSpaceIndex = line.indexOf(' ', firstSpaceIndex + 1);
+      if (firstSpaceIndex != -1 && secondSpaceIndex != -1) {
+        String codeString = line.substring(firstSpaceIndex + 1, secondSpaceIndex);
+        responseCode = codeString.toInt();  // Convert the status code to an integer
+      }
+      continue;  // Move to the next line
+    }
 
+    // Check if we are at the start of the body
+    if (line.length() == 0) {
+      isBody = true;  // The next line is the start of the response body
+      continue;
+    }
 
+    if (isBody) {
+      // We don't need to process the body, so we can just skip the lines
+      continue;
+    }
+  }
+
+    // Close the connection
+    client.stop();
+    Serial.println("Disconnected from server.");
+
+    // Print the response code
+    Serial.print("Response Code: ");
+    Serial.println(responseCode);
+    
+    if (responseCode != 200) {
+      Serial.println(responseCode);
+      //  _mainLed.SetColor(255, 0, 0);
+      // Do something if the response code is 200 (OK)
+    } else {
+      // Handle other response codes
+      Serial.println("Connection to server success");
+      }
+    }
+}
 
 
 
