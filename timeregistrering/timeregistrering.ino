@@ -2,13 +2,17 @@
 #include "DataStorage.h"
 #include "serial_number.h"
 #include "LEDController.h"
+#include "ButtonController.h"
 
 DataStorage _data;
 NetComm _comm;
 LEDController _mainLed(2, 3, 4);
+ButtonController _buttonPins(2, 11, 12, 13);
 
 const uint16_t MESSAGES_DATA_INDEX = 80;
-
+void ISR_Handler() {
+    _buttonPins.Interrupt(1);
+}
 void setup() {
    Serial.begin(9600);
    _mainLed.SwitchOn();
@@ -20,6 +24,9 @@ void setup() {
   _data.ResetEeprom();
   _comm.Initialize(&_data);
 
+
+
+  attachInterrupt(digitalPinToInterrupt(2), ISR_Handler, FALLING);
 
 //EEPROM.write(5, 12);
 

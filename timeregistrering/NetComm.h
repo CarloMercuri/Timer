@@ -25,6 +25,7 @@ class NetComm
     bool TryConnectWiFi();
     bool TryConnectHotspot();
     WifiConfig SendWifiDetailsRequest();
+    int SendButtonEventRequest(int buttonId, int unixTimestamp);
     
   private:
   int connection_status = NO_CONNECTION; // 0 = not connected, 1 = connected to hotspot, 2 = connected to custom wifi
