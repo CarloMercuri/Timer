@@ -3,6 +3,16 @@
 #include "serial_number.h"
 #include "LEDController.h"
 
+#define BTN1_PIN 8
+#define BTN2_PIN 9
+#define BTN3_PIN 12
+#define BTN4_PIN 13
+
+bool pressed1 = false;
+bool pressed2 = false;
+bool pressed3 = false;
+bool pressed4 = false;
+
 DataStorage _data;
 NetComm _comm;
 LEDController _mainLed(2, 3, 4);
@@ -12,7 +22,12 @@ const uint16_t MESSAGES_DATA_INDEX = 80;
 void setup() {
    Serial.begin(9600);
    _mainLed.SwitchOn();
+
   Serial.println("Initializing Arduino");
+  pinMode(BTN1_PIN, INPUT);
+  pinMode(BTN2_PIN, INPUT);
+  pinMode(BTN3_PIN, INPUT);
+  pinMode(BTN4_PIN, INPUT);
   // Initialize EEPROM with a size
   //EEPROM.begin(EEPROM.length());
   uint16_t eeprom_size = EEPROM.length();
@@ -43,29 +58,84 @@ void setup() {
 
 void loop() {
   int wifi_status = _comm.GetConnectionStatus();
-  Serial.println("=============================");
-  Serial.println("Connection status: ");
 
-  Serial.println(_comm.GetConnectionStatusFormatted());
-  Serial.println("=============================");
-  Serial.println("                   ");
+  // switch(wifi_status){
+  //   case NO_CONNECTION:
+  //     HandleNoConnection();
+  //     break;
+  //   case CONNECTED_HOTSPOT:
+  //     HandleConnectedHotspot();
+  //     break;
+  //   case CONNECTED_WIFI:
+  //     HandleConnectedWifi();
+  //     break;
 
-  switch(wifi_status){
-    case NO_CONNECTION:
-      HandleNoConnection();
-      break;
-    case CONNECTED_HOTSPOT:
-      HandleConnectedHotspot();
-      break;
-    case CONNECTED_WIFI:
-      HandleConnectedWifi();
-      break;
+  //   default:
+  //   break;
+  // } 
 
-    default:
-    break;
+  if(digitalRead(BTN1_PIN)){
+    if(!pressed1){
+      ButtonSystemEvent _event;
+      _event.button_id = 1;
+      _event.time_offset = 3432;
+      _data.writeEventData(_event);
+      pressed1 = true;
+    }
+  } else {
+    pressed1 = false;
   }
 
-  delay(2000);
+  if(digitalRead(BTN2_PIN)){
+    if(!pressed2){
+      ButtonSystemEvent _event;
+      _event.button_id = 2;
+      _event.time_offset = 44245;
+      _data.writeEventData(_event);
+      pressed2 = true;
+    }
+  } else {
+    pressed2 = false;
+  }
+
+  if(digitalRead(BTN3_PIN)){
+    if(!pressed3){
+      ButtonSystemEvent _event;
+      _event.button_id = 3;
+      _event.time_offset = 1441432;
+      _data.writeEventData(_event);
+      pressed3 = true;
+    }
+  } else {
+    pressed3 = false;
+  }
+
+  if(digitalRead(BTN4_PIN)){
+    if(!pressed4){
+      ButtonSystemEvent peek = _data.peekEventData();
+      ButtonSystemEvent pop = _data.popEventData();    
+
+      Serial.print("PEEK: ");
+      Serial.print(" btn_id: ");
+      Serial.print(peek.button_id);
+        
+      Serial.print(", offset: ");
+      Serial.println(peek.time_offset);
+
+      Serial.print("POP: ");
+      Serial.print(" btn_id: ");
+      Serial.print(pop.button_id);
+        
+      Serial.print(", offset: ");
+      Serial.println(pop.time_offset);
+
+
+      pressed4 = true;
+    }
+  } else {
+    pressed4 = false;
+  }
+
 
 }
 
