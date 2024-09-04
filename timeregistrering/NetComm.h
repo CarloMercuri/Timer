@@ -9,8 +9,6 @@
 #define CONNECTED_HOTSPOT 1
 #define CONNECTED_WIFI 2
 
-
-
 class NetComm
 {
   public:
@@ -25,7 +23,7 @@ class NetComm
     bool TryConnectWiFi();
     bool TryConnectHotspot();
     WifiConfig SendWifiDetailsRequest();
-    int SendButtonEventRequest(int buttonId, int unixTimestamp);
+    int SendButtonEventRequest(int buttonId, unsigned long long unixTimestamp);
     
   private:
   int connection_status = NO_CONNECTION; // 0 = not connected, 1 = connected to hotspot, 2 = connected to custom wifi
@@ -35,4 +33,3 @@ class NetComm
   // Number of milliseconds to wait if no data is available before trying again
   int kNetworkDelay = 1000;
 };
-

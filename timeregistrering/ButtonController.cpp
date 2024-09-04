@@ -1,3 +1,4 @@
+
 #include "ButtonController.h"
 #include "Arduino.h"
 #include "NetComm.h"
@@ -26,24 +27,7 @@ ButtonController::ButtonController(int yB_pin, int wB_pin, int rB_pin, int bB_pi
 void ButtonController::Interrupt(int _buttonId)
 {
    buttonId = _buttonId;
-   unixTimestamp = 41878617865595;
-
-  int wifi_status = _comm2.GetConnectionStatus();
-
-  switch(wifi_status){
-    case NO_CONNECTION:
-      //SaveToEEPROM();
-      break;
-    case CONNECTED_HOTSPOT:
-    case CONNECTED_WIFI:
-      _comm2.SendButtonEventRequest(buttonId, unixTimestamp);
-      break;
-      
-    default:
-    break;
-  }
-
+   unixTimestamp = 1725445282;
+   Serial.println("Connected to wifi - start send event");
+   _comm2.SendButtonEventRequest(buttonId, unixTimestamp);
 }
-
-
-
