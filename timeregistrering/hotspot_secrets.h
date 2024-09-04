@@ -1,2 +1,2 @@
-#define HOTSPOT_SSID "Mads"
-#define HOTSPOT_PW "mads0810"
+#define HOTSPOT_SSID "h5ASUS"
+#define HOTSPOT_PW "Password1234"

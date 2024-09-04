@@ -7,12 +7,10 @@
 DataStorage _data;
 NetComm _comm;
 LEDController _mainLed(2, 3, 4);
-ButtonController _buttonPins(2, 11, 12, 13);
+ButtonController _buttonPins(10, 11, 12, 13);
 
 const uint16_t MESSAGES_DATA_INDEX = 80;
-void ISR_Handler() {
-    _buttonPins.Interrupt(1);
-}
+
 void setup() {
    Serial.begin(9600);
    _mainLed.SwitchOn();
@@ -23,10 +21,6 @@ void setup() {
   _data.Initialize(eeprom_size, MESSAGES_DATA_INDEX);
   _data.ResetEeprom();
   _comm.Initialize(&_data);
-
-
-
-  attachInterrupt(digitalPinToInterrupt(2), ISR_Handler, FALLING);
 
 //EEPROM.write(5, 12);
 
@@ -48,33 +42,55 @@ void setup() {
 
 }
 
+unsigned long lastWifiEventRun = 0;   // Track last time the WiFi event ran
+unsigned long wifiEventDelay = 3000;  // Set the desired delay for WiFi events
+
 void loop() {
-  int wifi_status = _comm.GetConnectionStatus();
-  Serial.println("=============================");
-  Serial.println("Connection status: ");
+    // Get the current time
+    unsigned long currentMillis = millis();
+    
+    // Non-blocking delay to replace delay(3000)
+    if (currentMillis - lastWifiEventRun > wifiEventDelay) {
+        lastWifiEventRun = currentMillis;  // Update the last run time
+        
+        // Run your existing logic here (runs every 3000ms)
+        int wifi_status = _comm.GetConnectionStatus();
+        Serial.println("=============================");
+        Serial.println("Connection status: ");
+        Serial.println(_comm.GetConnectionStatusFormatted());
+        Serial.println("=============================");
+        Serial.println("                   ");
 
-  Serial.println(_comm.GetConnectionStatusFormatted());
-  Serial.println("=============================");
-  Serial.println("                   ");
+        switch (wifi_status) {
+            case NO_CONNECTION:
+                HandleNoConnection();
+                break;
+            case CONNECTED_HOTSPOT:
+                HandleConnectedHotspot();
+                break;
+            case CONNECTED_WIFI:
+                HandleConnectedWifi();
+                break;
+            default:
+                break;
+        }
+    }
 
-  switch(wifi_status){
-    case NO_CONNECTION:
-      HandleNoConnection();
-      break;
-    case CONNECTED_HOTSPOT:
-      HandleConnectedHotspot();
-      break;
-    case CONNECTED_WIFI:
-      HandleConnectedWifi();
-      break;
-
-    default:
-    break;
-  }
-
-  delay(2000);
-
+    // Check for button presses
+    if (digitalRead(10) == HIGH) {
+        _buttonPins.Interrupt(1); // Check if button 1 is pressed
+    }
+    if (digitalRead(11) == HIGH) {
+        _buttonPins.Interrupt(2); // Check if button 2 is pressed
+    }
+    if (digitalRead(12) == HIGH) {
+        _buttonPins.Interrupt(3); // Check if button 3 is pressed
+    }
+    if (digitalRead(13) == HIGH) {
+        _buttonPins.Interrupt(4); // Check if button 4 is pressed
+    }
 }
+
 
 void HandleConnectedWifi(){
   _mainLed.SetColor(0, 255, 0);

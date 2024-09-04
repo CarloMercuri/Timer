@@ -19,6 +19,6 @@ class ButtonController
   int pin_wB;
   int pin_rB;
   int pin_bB;
-  int unixTimestamp;
+  unsigned long long unixTimestamp;
   int buttonId;
 };
