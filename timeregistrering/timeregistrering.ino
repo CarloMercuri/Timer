@@ -2,6 +2,7 @@
 #include "DataStorage.h"
 #include "serial_number.h"
 #include "LEDController.h"
+#include "ButtonController.h"
 
 #define BTN1_PIN 8
 #define BTN2_PIN 9
@@ -16,6 +17,7 @@ bool pressed4 = false;
 DataStorage _data;
 NetComm _comm;
 LEDController _mainLed(2, 3, 4);
+ButtonController _buttonPins(10, 11, 12, 13);
 
 const uint16_t MESSAGES_DATA_INDEX = 80;
 
@@ -34,7 +36,6 @@ void setup() {
   _data.Initialize(eeprom_size, MESSAGES_DATA_INDEX);
   _data.ResetEeprom();
   _comm.Initialize(&_data);
-
 
 //EEPROM.write(5, 12);
 
@@ -56,88 +57,57 @@ void setup() {
 
 }
 
+
+unsigned long lastWifiEventRun = 0;   // Track last time the WiFi event ran
+unsigned long wifiEventDelay = 3000;  // Set the desired delay for WiFi events
+
 void loop() {
-  int wifi_status = _comm.GetConnectionStatus();
-
-  // switch(wifi_status){
-  //   case NO_CONNECTION:
-  //     HandleNoConnection();
-  //     break;
-  //   case CONNECTED_HOTSPOT:
-  //     HandleConnectedHotspot();
-  //     break;
-  //   case CONNECTED_WIFI:
-  //     HandleConnectedWifi();
-  //     break;
-
-  //   default:
-  //   break;
-  // } 
-
-  if(digitalRead(BTN1_PIN)){
-    if(!pressed1){
-      ButtonSystemEvent _event;
-      _event.button_id = 1;
-      _event.time_offset = 3432;
-      _data.writeEventData(_event);
-      pressed1 = true;
-    }
-  } else {
-    pressed1 = false;
-  }
-
-  if(digitalRead(BTN2_PIN)){
-    if(!pressed2){
-      ButtonSystemEvent _event;
-      _event.button_id = 2;
-      _event.time_offset = 44245;
-      _data.writeEventData(_event);
-      pressed2 = true;
-    }
-  } else {
-    pressed2 = false;
-  }
-
-  if(digitalRead(BTN3_PIN)){
-    if(!pressed3){
-      ButtonSystemEvent _event;
-      _event.button_id = 3;
-      _event.time_offset = 1441432;
-      _data.writeEventData(_event);
-      pressed3 = true;
-    }
-  } else {
-    pressed3 = false;
-  }
-
-  if(digitalRead(BTN4_PIN)){
-    if(!pressed4){
-      ButtonSystemEvent peek = _data.peekEventData();
-      ButtonSystemEvent pop = _data.popEventData();    
-
-      Serial.print("PEEK: ");
-      Serial.print(" btn_id: ");
-      Serial.print(peek.button_id);
+    // Get the current time
+    unsigned long currentMillis = millis();
+    
+    // Non-blocking delay to replace delay(3000)
+    if (currentMillis - lastWifiEventRun > wifiEventDelay) {
+        lastWifiEventRun = currentMillis;  // Update the last run time
         
-      Serial.print(", offset: ");
-      Serial.println(peek.time_offset);
+        // Run your existing logic here (runs every 3000ms)
+        int wifi_status = _comm.GetConnectionStatus();
+        Serial.println("=============================");
+        Serial.println("Connection status: ");
+        Serial.println(_comm.GetConnectionStatusFormatted());
+        Serial.println("=============================");
+        Serial.println("                   ");
 
-      Serial.print("POP: ");
-      Serial.print(" btn_id: ");
-      Serial.print(pop.button_id);
-        
-      Serial.print(", offset: ");
-      Serial.println(pop.time_offset);
-
-
-      pressed4 = true;
+        switch (wifi_status) {
+            case NO_CONNECTION:
+                HandleNoConnection();
+                break;
+            case CONNECTED_HOTSPOT:
+                HandleConnectedHotspot();
+                break;
+            case CONNECTED_WIFI:
+                HandleConnectedWifi();
+                break;
+            default:
+                break;
+        }
     }
-  } else {
-    pressed4 = false;
-  }
 
 
+    // Check for button presses
+    if (digitalRead(10) == HIGH) {
+        _buttonPins.Interrupt(1); // Check if button 1 is pressed
+    }
+    if (digitalRead(11) == HIGH) {
+        _buttonPins.Interrupt(2); // Check if button 2 is pressed
+    }
+    if (digitalRead(12) == HIGH) {
+        _buttonPins.Interrupt(3); // Check if button 3 is pressed
+    }
+    if (digitalRead(13) == HIGH) {
+        _buttonPins.Interrupt(4); // Check if button 4 is pressed
+    }
 }
+
 
 void HandleConnectedWifi(){
   _mainLed.SetColor(0, 255, 0);
