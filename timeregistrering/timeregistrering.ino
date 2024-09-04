@@ -4,6 +4,16 @@
 #include "LEDController.h"
 #include "ButtonController.h"
 
+#define BTN1_PIN 8
+#define BTN2_PIN 9
+#define BTN3_PIN 12
+#define BTN4_PIN 13
+
+bool pressed1 = false;
+bool pressed2 = false;
+bool pressed3 = false;
+bool pressed4 = false;
+
 DataStorage _data;
 NetComm _comm;
 LEDController _mainLed(2, 3, 4);
@@ -14,7 +24,12 @@ const uint16_t MESSAGES_DATA_INDEX = 80;
 void setup() {
    Serial.begin(9600);
    _mainLed.SwitchOn();
+
   Serial.println("Initializing Arduino");
+  pinMode(BTN1_PIN, INPUT);
+  pinMode(BTN2_PIN, INPUT);
+  pinMode(BTN3_PIN, INPUT);
+  pinMode(BTN4_PIN, INPUT);
   // Initialize EEPROM with a size
   //EEPROM.begin(EEPROM.length());
   uint16_t eeprom_size = EEPROM.length();
@@ -41,6 +56,7 @@ void setup() {
   // Serial.print("Name: "); Serial.println(dataRead.name);
 
 }
+
 
 unsigned long lastWifiEventRun = 0;   // Track last time the WiFi event ran
 unsigned long wifiEventDelay = 3000;  // Set the desired delay for WiFi events
@@ -75,6 +91,7 @@ void loop() {
                 break;
         }
     }
+
 
     // Check for button presses
     if (digitalRead(10) == HIGH) {
