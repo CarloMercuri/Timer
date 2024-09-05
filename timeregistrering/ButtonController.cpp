@@ -1,3 +1,4 @@
+
 #include "ButtonController.h"
 #include "Arduino.h"
 #include "NetComm.h"
@@ -30,6 +31,3 @@ void ButtonController::Interrupt(int _buttonId)
    Serial.println("Connected to wifi - start send event");
    _comm2.SendButtonEventRequest(buttonId, unixTimestamp);
 }
-
-
-

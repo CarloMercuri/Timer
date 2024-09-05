@@ -9,8 +9,6 @@
 #define CONNECTED_HOTSPOT 1
 #define CONNECTED_WIFI 2
 
-
-
 class NetComm
 {
   public:
@@ -35,4 +33,3 @@ class NetComm
   // Number of milliseconds to wait if no data is available before trying again
   int kNetworkDelay = 1000;
 };
-
