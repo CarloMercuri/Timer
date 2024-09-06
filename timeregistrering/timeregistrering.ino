@@ -37,9 +37,11 @@ unsigned long lastWifiEventRun = 0;   // Track last time the WiFi event ran
 unsigned long wifiEventDelay = 3000;  // Set the desired delay for WiFi events
 
 void loop() {
-    _input.CheckInputs();
+  if(millis() > 7000){
+      _input.CheckInputs();
+      HandleButtonPresses();
+  }
     delay(2);
-        HandleButtonPresses();
     // Get the current time
     unsigned long currentMillis = millis();
     
