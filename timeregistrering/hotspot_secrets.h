@@ -1,2 +1,2 @@
-#define HOTSPOT_SSID "h5ASUS"
-#define HOTSPOT_PW "Password1234"
+#define HOTSPOT_SSID "AndroidAP"
+#define HOTSPOT_PW "huxk3138"

@@ -35,15 +35,15 @@ String NetComm::GetConnectionStatusFormatted(){
 
 bool NetComm::TryConnectWiFi() {  
     WifiConfig c = _dataStorage->GetWifiConnectionData();
-    Serial.println("Attempting to connect to Wifi.");
+    //Serial.println("Attempting to connect to Wifi.");
   if(c.ssid.length() == 0){
-    Serial.println("!!!!!!!!!!! Cannot connect to wifi. Wifi config is empty.");
-    Serial.println("    ");
+    // Serial.println("!!!!!!!!!!! Cannot connect to wifi. Wifi config is empty.");
+    // Serial.println("    ");
     return false;
   }
 
-  Serial.println(c.ssid);
-  Serial.println(c.password);
+  // Serial.println(c.ssid);
+  // Serial.println(c.password);
 
   WiFi.begin(c.ssid.c_str(), c.password.c_str());
 
@@ -52,13 +52,13 @@ bool NetComm::TryConnectWiFi() {
   while (WiFi.status() != WL_CONNECTED && attemptCounter < 3) {    
     delay(1000);
     attemptCounter++;
-    Serial.print("Attempt ");
-    Serial.println(attemptCounter);
+    // Serial.print("Attempt ");
+    // Serial.println(attemptCounter);
   }
 
   // Check if connected to network
   if(WiFi.status() == WL_CONNECTED){
-    Serial.println("CONNECTED to wifi!");
+    //Serial.println("CONNECTED to wifi!");
     this->connection_status = CONNECTED_WIFI; // connected to wifi
     return true;
   } else {
@@ -70,9 +70,9 @@ bool NetComm::TryConnectWiFi() {
 
 bool NetComm::TryConnectHotspot() {
   WifiConfig _hotSpotData = _dataStorage->GetHotspotConnectionData();
-  Serial.println("Attempting to connect to Hotspot.");
-   Serial.println(_hotSpotData.ssid);
-  Serial.println(_hotSpotData.password);
+  // Serial.println("Attempting to connect to Hotspot.");
+  //  Serial.println(_hotSpotData.ssid);
+  // Serial.println(_hotSpotData.password);
 
   WiFi.begin(_hotSpotData.ssid.c_str(), _hotSpotData.password.c_str());
 
@@ -81,13 +81,13 @@ bool NetComm::TryConnectHotspot() {
   while (WiFi.status() != WL_CONNECTED && attemptCounter < 11) {    
     delay(1000);
     attemptCounter++;
-    Serial.print("Attempt ");
-    Serial.println(attemptCounter);
+    // Serial.print("Attempt ");
+    // Serial.println(attemptCounter);
   }
 
   // Check if connected to network
   if(WiFi.status() == WL_CONNECTED){
-    Serial.println("Connected to hotspot!");
+    //Serial.println("Connected to hotspot!");
     this->connection_status = CONNECTED_HOTSPOT; // connected to hotspot
     return true;
   } else {
@@ -96,8 +96,76 @@ bool NetComm::TryConnectHotspot() {
   }
 }
 
+uint32_t NetComm::SendUnixTimestampRequest() {
+  // Serial.println("------------------  TIMESTAMP");
+  // Serial.println("");
+  if (WiFi.status() != WL_CONNECTED) {
+    Serial.println("Cannot send Timestamp request");
+    return 0;
+  }
+    WiFiClient client;
+    
+    if (client.connect("192.168.1.36", 5001)) {  // Server port 80 for HTTP
+    //Serial.println("TIMESTAMP: Connected to server");
+
+    // Send HTTP GET request
+    client.println("GET /api/Arduino/GetUnixTimestamp HTTP/1.1");
+    client.println("Host: 192.168.1.36:5001"); // Replace with your server's host
+    client.println("Connection: close");
+    client.println();  // End of the request
+
+    // Wait for a response from the server
+    String responseBody = "";
+
+    bool isBody = false;
+
+    // Wait for a response from the server
+    while (client.connected()) {
+      String line = client.readStringUntil('\n');
+      // Serial.print("!!!!!!!!!!LINE: ");
+      // Serial.println(line);
+      line.trim();  // Remove any extra white space or line breaks
+
+      // Check if we are at the start of the body
+      if (line.length() == 0) {
+        isBody = true;  // The next line is the start of the response body
+        continue;
+      }
+       
+       if (isBody) {
+        if(line.charAt(0) == 'a' || line.charAt(0) == '0'){
+          continue;
+        }
+        // Check if the line is a chunk size header
+        // if (line.charAt(0) != '{' && line.charAt(0) != '[') {
+        //   continue;  // Skip any lines that don't start with JSON data
+        // }
+
+        // This is the actual JSON body
+        responseBody += line;
+      }
+    }
+
+
+    // Close the connection
+    client.stop();
+    //Serial.println("TIMESTAMP: Disconnected from server.");
+
+    uint32_t timestamp = responseBody.toInt();
+    // Serial.print("Got new timestamp: body string: ");
+    // Serial.println(responseBody);
+    // Serial.print(" Parsed: ");
+    // Serial.println(timestamp);
+    return timestamp;
+   
+  } else {
+    // Serial.println("Connection to server failed");
+    return -1;
+  }
+}
+
 WifiConfig NetComm::SendWifiDetailsRequest() {
-  Serial.println("Send GET");
+  //Serial.println("Send GET");
   if (WiFi.status() != WL_CONNECTED) {
     Serial.println("Cannot send GET request. Connection not active.");
     WifiConfig config("","","");
@@ -106,10 +174,9 @@ WifiConfig NetComm::SendWifiDetailsRequest() {
     WiFiClient client;
     
     if (client.connect("192.168.1.36", 5001)) {  // Server port 80 for HTTP
-    Serial.println("Connected to server");
 
     // Send HTTP GET request
-    client.println("GET /api/web/GetWifiConfig/"+ String(DEVICE_SERIAL_NUMBER) + "HTTP/1.1");
+    client.println("GET /api/web/GetWifiConfig/"+ String(DEVICE_SERIAL_NUMBER) + " HTTP/1.1");
     client.println("Host: 192.168.1.36:5001"); // Replace with your server's host
     client.println("Connection: close");
     client.println();  // End of the request
@@ -144,7 +211,7 @@ WifiConfig NetComm::SendWifiDetailsRequest() {
 
     // Close the connection
     client.stop();
-    Serial.println("Disconnected from server.");
+    //Serial.println("Disconnected from server.");
 
 
     // Parse the JSON response
@@ -174,7 +241,7 @@ WifiConfig NetComm::SendWifiDetailsRequest() {
     //     // Create an instance of WifiConfig and populate it
    
   } else {
-    Serial.println("Connection to server failed");
+    // Serial.println("Connection to server failed");
     WifiConfig config("","","");
     return config;
   }
@@ -182,11 +249,15 @@ WifiConfig NetComm::SendWifiDetailsRequest() {
 
 
 int NetComm::SendButtonEventRequest(int id , unsigned long long unixTimestamp) {
-  Serial.println("Send POST");
+    if(GetConnectionStatus() == NO_CONNECTION){
+      return -1;
+    }
     WiFiClient client;
+    Serial.print("Sending button event for button: ");
+    Serial.println(id);
     
     if (client.connect("192.168.1.36", 5001)) {  
-    Serial.println("Connected to server");
+    //Serial.println("Connected to server");
 
     // Create a JSON object using ArduinoJson
         StaticJsonDocument<200> doc;
@@ -199,7 +270,7 @@ int NetComm::SendButtonEventRequest(int id , unsigned long long unixTimestamp) {
         serializeJson(doc, jsonBody);
 
         // Print the JSON body for debugging
-        Serial.println("Body: " + jsonBody);
+        //Serial.println("Body: " + jsonBody);
 
     // Send HTTP GET request
     client.println("POST /api/arduino/RegisterTime HTTP/1.1");
@@ -246,22 +317,20 @@ int NetComm::SendButtonEventRequest(int id , unsigned long long unixTimestamp) {
 
     // Close the connection
     client.stop();
-    Serial.println("Disconnected from server.");
+    // Serial.println("Disconnected from server.");
 
-    // Print the response code
-    Serial.print("Response Code: ");
-    Serial.println(responseCode);
+    // // Print the response code
+    // Serial.print("Response Code: ");
+    // Serial.println(responseCode);
     
     if (responseCode != 200) {
       Serial.println(responseCode);
+      return -1;
       //  _mainLed.SetColor(255, 0, 0);
       // Do something if the response code is 200 (OK)
     } else {
       // Handle other response codes
-      Serial.println("Connection to server success");
+        return responseCode;
       }
     }
 }
-<<<<<<< HEAD
-
-=======

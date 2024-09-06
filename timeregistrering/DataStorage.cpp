@@ -361,19 +361,20 @@ ButtonSystemEvent DataStorage::popEventData() {
 
   if(_pointers.end == 0){
     _event.button_id = 0;
+    _event.timestamp = 5555;
     return _event;
   }
   
   _event.button_id = EEPROM.read(_pointers.start);
-  _event.time_offset = EEPROM.read(_pointers.start + 1) | (EEPROM.read(_pointers.start + 2) << 8);
+  _event.timestamp = this->readUint32Eeprom(_pointers.start + 1);
 
    // Serial.println("Read Event: ");
   // Serial.print("Button ID: ");
   // Serial.print(_event.button_id);
   // Serial.print("Offset: ");
-  // Serial.println(_event.time_offset);
+  // Serial.println(_event.timestamp);
 
-  _pointers.start += 3;
+  _pointers.start += 5;
 
   // This happens if we just popped the LAST node
   if(_pointers.start > _pointers.end){
@@ -410,13 +411,13 @@ ButtonSystemEvent DataStorage::peekEventData(){
   }
   
   _event.button_id = EEPROM.read(_pointers.start);
-  _event.time_offset = EEPROM.read(_pointers.start + 1) | (EEPROM.read(_pointers.start + 2) << 8);
+  _event.timestamp = this->readUint32Eeprom(_pointers.start + 1);
 
   // Serial.println("Read Event: ");
   // Serial.print("Button ID: ");
   // Serial.print(_event.button_id);
   // Serial.print("Offset: ");
-  // Serial.println(_event.time_offset);
+  // Serial.println(_event.timestamp);
 
   // Serial.println("");
   // Serial.println("================= PEEK END ===============");
@@ -427,6 +428,9 @@ ButtonSystemEvent DataStorage::peekEventData(){
 }
 
 void DataStorage::writeEventData(ButtonSystemEvent _event) {
+  Serial.print("Saving event. ");
+  Serial.print("ButtonID: ");
+  Serial.print(_event.button_id);
   SnakePointers _pointers = this->readSnakePointers();
   int write_address = 0;
   // Serial.print("writeEventData: read pointers");
@@ -438,18 +442,34 @@ void DataStorage::writeEventData(ButtonSystemEvent _event) {
   if(_pointers.end == 0){
     // Serial.println("GOT 0");
     _pointers.start = SNAKE_START_ADDRESS;
-    _pointers.end = SNAKE_START_ADDRESS- 3; // We always write to the block AFTER pointers.end, so we manually set it to a previous one for code simplicity
+    _pointers.end = SNAKE_START_ADDRESS- 5; // We always write to the block AFTER pointers.end, so we manually set it to a previous one for code simplicity
   }
 
-  write_address = _pointers.end + 3;
+  write_address = _pointers.end + 5;
 
   EEPROM.write(write_address, _event.button_id);
-  EEPROM.write(write_address + 1, _event.time_offset & 0xFF);        
-  EEPROM.write(write_address + 2, (_event.time_offset >> 8) & 0xFF);    
+  EEPROM.write(write_address + 1, _event.timestamp & 0xFF);        
+  EEPROM.write(write_address + 2, (_event.timestamp >> 8) & 0xFF);    
+  EEPROM.write(write_address + 3, (_event.timestamp >> 16) & 0xFF);    
+  EEPROM.write(write_address + 4, (_event.timestamp >> 24) & 0xFF);    
 
-  _pointers.end += 3;
+  _pointers.end += 5;
 
   this->writeSnakePointer(_pointers);
+}
+
+// Utilities
+
+uint32_t DataStorage::readUint32Eeprom(int address) {
+  uint32_t value = 0;
+  
+  // Read 4 bytes from the EEPROM and construct the uint32_t
+  value = EEPROM.read(address);
+  value |= ((uint32_t)EEPROM.read(address + 1) << 8);
+  value |= ((uint32_t)EEPROM.read(address + 2) << 16);
+  value |= ((uint32_t)EEPROM.read(address + 3) << 24);
+  
+  return value;
 }
 
 uint16_t DataStorage::FindMessagesCurrentLocation() {
@@ -477,5 +497,5 @@ void DataStorage::ResetEeprom() {
         }
  }
 
- // Serial.println("EEPROM reset. Test:");
+  Serial.println("-- SETUP: EEPROM reset.");
 }

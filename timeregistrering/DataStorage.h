@@ -20,7 +20,7 @@ struct ButtonMsg {
 
 struct ButtonSystemEvent {
   byte button_id;
-  uint16_t time_offset;
+  uint32_t timestamp;
 };
 
 struct SnakePointers {
@@ -75,6 +75,7 @@ class DataStorage
     int DATA_SIZE; // Size of the struct
     WifiConfig _wifiData{"", "", ""};
     WifiConfig _hotspotData{"", HOTSPOT_SSID, HOTSPOT_PW};
+    uint32_t readUint32Eeprom(int address);
 };
 
 

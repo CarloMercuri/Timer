@@ -4,20 +4,15 @@
 #include "LEDController.h"
 #include "ButtonController.h"
 
-#define BTN1_PIN 8
-#define BTN2_PIN 9
-#define BTN3_PIN 12
-#define BTN4_PIN 13
-
-bool pressed1 = false;
-bool pressed2 = false;
-bool pressed3 = false;
-bool pressed4 = false;
-
 DataStorage _data;
 NetComm _comm;
 LEDController _mainLed(2, 3, 4);
-ButtonController _buttonPins(10, 11, 12, 13);
+ButtonController _input(&_data, BTN1_PIN, BTN2_PIN, BTN3_PIN, BTN4_PIN);
+
+uint32_t timestamp = 0;
+uint32_t timestamp_system_ms = 0;
+
+int saved_status = 0;
 
 const uint16_t MESSAGES_DATA_INDEX = 80;
 
@@ -25,11 +20,7 @@ void setup() {
    Serial.begin(9600);
    _mainLed.SwitchOn();
 
-  Serial.println("Initializing Arduino");
-  pinMode(BTN1_PIN, INPUT);
-  pinMode(BTN2_PIN, INPUT);
-  pinMode(BTN3_PIN, INPUT);
-  pinMode(BTN4_PIN, INPUT);
+  Serial.println("-- SETUP: Initializing Arduino");
   // Initialize EEPROM with a size
   //EEPROM.begin(EEPROM.length());
   uint16_t eeprom_size = EEPROM.length();
@@ -37,33 +28,18 @@ void setup() {
   _data.ResetEeprom();
   _comm.Initialize(&_data);
 
-//EEPROM.write(5, 12);
-
-  //resetEeprom();
-
-  // Example struct to write
-  // MyData dataToWrite = {1, 3.14, "Arduino"};
-
-  // // Write the struct to EEPROM
-  // writeStructToEEPROM(dataToWrite);
-
-  // // Read the struct back from EEPROM (assuming we want to read the first entry)
-  // MyData dataRead = readStructFromEEPROM(0);
-
-  // // Print the read data
-  // Serial.print("ID: "); Serial.println(dataRead.id);
-  // Serial.print("Value: "); Serial.println(dataRead.value);
-  // Serial.print("Name: "); Serial.println(dataRead.name);
-
+  Serial.println("-- SETUP:  Arduino Initialized");
 }
 
-<<<<<<< HEAD
-=======
+
 
 unsigned long lastWifiEventRun = 0;   // Track last time the WiFi event ran
 unsigned long wifiEventDelay = 3000;  // Set the desired delay for WiFi events
 
 void loop() {
+    _input.CheckInputs();
+    delay(2);
+        HandleButtonPresses();
     // Get the current time
     unsigned long currentMillis = millis();
     
@@ -73,11 +49,17 @@ void loop() {
         
         // Run your existing logic here (runs every 3000ms)
         int wifi_status = _comm.GetConnectionStatus();
-        Serial.println("=============================");
-        Serial.println("Connection status: ");
-        Serial.println(_comm.GetConnectionStatusFormatted());
-        Serial.println("=============================");
-        Serial.println("                   ");
+        if(wifi_status != saved_status){
+          if(saved_status == NO_CONNECTION){
+            // Check if there are messages to send
+            CheckSavedMessages();
+          }
+          Serial.println("=============================");
+          Serial.print("  WIFI Status changed to: ");
+          Serial.println(_comm.GetConnectionStatusFormatted());
+          Serial.println("=============================");
+          saved_status = wifi_status;
+        }        
 
         switch (wifi_status) {
             case NO_CONNECTION:
@@ -93,36 +75,89 @@ void loop() {
                 break;
         }
     }
-<<<<<<< HEAD
-=======
 
->>>>>>> e321ae274e2a468e2ef83fc9ca8496d09dacea95
 
-    // Check for button presses
-    if (digitalRead(10) == HIGH) {
-        _buttonPins.Interrupt(1); // Check if button 1 is pressed
+
+}
+
+void CheckSavedMessages() {
+  bool keepGoing = true;
+  while(keepGoing){
+    ButtonSystemEvent _event = _data.peekEventData();
+    if(_event.button_id > 0){
+      if(_comm.SendButtonEventRequest(_event.button_id, _event.timestamp) != 200){
+        keepGoing = false; // if we still couldnt' send them, stop here 
+        break;
+      } else {
+        // Success! we can now pop the event and go for the eventual next one
+        _data.popEventData();
+      }
+    } else {
+      keepGoing = false; // stop here
     }
-    if (digitalRead(11) == HIGH) {
-        _buttonPins.Interrupt(2); // Check if button 2 is pressed
+  }
+}
+
+void HandleButtonPresses(){
+  ButtonSystemEvent _event;
+
+  int result = 0;
+  if(_input.IsButtonPressed(1)){
+    Serial.println("Button 1 press");
+        _event.timestamp = GetCorrectTimestamp();
+      _event.button_id = 1;
+      result = _comm.SendButtonEventRequest(1, _event.timestamp);
+      Serial.print("Button event: Got response: ");
+      Serial.println(result);
+      if(result != 200){
+        _data.writeEventData(_event);
+      }
     }
-    if (digitalRead(12) == HIGH) {
-        _buttonPins.Interrupt(3); // Check if button 3 is pressed
+
+     if(_input.IsButtonPressed(2)){
+      _event.button_id = 2;
+        _event.timestamp = GetCorrectTimestamp();
+      result = _comm.SendButtonEventRequest(2, _event.timestamp);
+      if(result != 200){
+        _data.writeEventData(_event);
+      }
     }
-    if (digitalRead(13) == HIGH) {
-        _buttonPins.Interrupt(4); // Check if button 4 is pressed
+
+     if(_input.IsButtonPressed(3)){
+       _event.button_id = 3;
+         _event.timestamp = GetCorrectTimestamp();
+      result = _comm.SendButtonEventRequest(3, _event.timestamp);
+      if(result != 200){
+        _data.writeEventData(_event);
+      }
+    }
+
+     if(_input.IsButtonPressed(4)){
+       _event.button_id = 4;
+         _event.timestamp = GetCorrectTimestamp();
+      result = _comm.SendButtonEventRequest(4, _event.timestamp);
+      if(result != 200){
+        _data.writeEventData(_event);
+      }
     }
 }
 
+uint32_t GetCorrectTimestamp(){
+  return timestamp + ((millis() - timestamp_system_ms) / 1000) ;
+}
 
 void HandleConnectedWifi(){
-  _mainLed.SetColor(0, 255, 0);
+  _mainLed.SetColor(0, 120, 0);
     Serial.println("------- State: HandleConnectedWifi");
+    if(timestamp == 0){
+      timestamp = _comm.SendUnixTimestampRequest();
+      timestamp_system_ms = millis();
+    }
+
 }
 
 void HandleNoConnection() {
   _mainLed.SetColor(255, 0, 0);
-  Serial.println("------- State: HandleNoConnection");
-  // WifiConfig fromEeprom = _data.readWifiData();
 
   if(!_comm.TryConnectWiFi()){
     _comm.TryConnectHotspot();
@@ -130,8 +165,11 @@ void HandleNoConnection() {
 }
 
 void HandleConnectedHotspot() {
-  _mainLed.SetColor(255, 255, 0);
-    Serial.println("------- State: HandleConnectedHotspot");
+  _mainLed.SetColor(0, 0, 255);
+    if(timestamp == 0){
+      timestamp = _comm.SendUnixTimestampRequest();
+      timestamp_system_ms = millis();
+    }
   WifiConfig fromEeprom = _data.readWifiData();
 
   if(fromEeprom.ssid.length() > 0){ // we have wifi saved locally
@@ -142,13 +180,13 @@ void HandleConnectedHotspot() {
     // At this point we send a request to the server to see if the user has saved some
     // wifi credentials.
     WifiConfig c = _comm.SendWifiDetailsRequest();
-    Serial.println("Fetched wifi information from server.");
-    Serial.print("Serial Number: ");
-    Serial.println(c.serialNumber);
-    Serial.print("SSID: ");
-    Serial.println(c.ssid);
-    Serial.print("Password: ");
-    Serial.println(c.password);
+    // Serial.println("Fetched wifi information from server.");
+    // Serial.print("Serial Number: ");
+    // Serial.println(c.serialNumber);
+    // Serial.print("SSID: ");
+    // Serial.println(c.ssid);
+    // Serial.print("Password: ");
+    // Serial.println(c.password);
 
     if(c.ssid.length() == 0){
       return;

@@ -23,6 +23,7 @@ class NetComm
     bool TryConnectWiFi();
     bool TryConnectHotspot();
     WifiConfig SendWifiDetailsRequest();
+    uint32_t SendUnixTimestampRequest();
     int SendButtonEventRequest(int buttonId, unsigned long long unixTimestamp);
     
   private:
