@@ -9,8 +9,8 @@
  * @param yellowPin: Digital pin number on the Arduino board to which the yellow pin is connected.
  * @param greenPin: Digital pin number on the Arduino board to which the green pin is connected.
  */
-LEDController::LEDController(int r_pin, int g_pin, int b_pin)
-{
+
+LEDController::LEDController(int r_pin, int g_pin, int b_pin) {
   is_on = false;
   pin_r = r_pin;
   pin_g = g_pin;
@@ -20,33 +20,52 @@ LEDController::LEDController(int r_pin, int g_pin, int b_pin)
   pinMode(pin_b, OUTPUT);
 }
 
-void LEDController::SetColor(int red, int green, int blue)
-{
-   r = red;
-   g = green;
-   b = blue;
+void LEDController::SetColor(int red, int green, int blue) {
+  r = red;
+  g = green;
+  b = blue;
 
-   if(is_on)
-   {
-      analogWrite(pin_r, r);
-      analogWrite(pin_g, g);
-      analogWrite(pin_b, b);
-   }
+  if (is_on) {
+    analogWrite(pin_r, r);
+    analogWrite(pin_g, g);
+    analogWrite(pin_b, b);
+  }
 }
 
-void LEDController::SwitchOn()
-{
+void LEDController::SwitchOn() {
   is_on = true;
-          analogWrite(pin_r, r);
-      analogWrite(pin_g, g);
-      analogWrite(pin_b, b);
+  analogWrite(pin_r, r);
+  analogWrite(pin_g, g);
+  analogWrite(pin_b, b);
 }
 
-void LEDController::SwitchOff()
-{
+void LEDController::SwitchOff() {
   is_on = false;
   analogWrite(pin_r, 0);
   analogWrite(pin_g, 0);
   analogWrite(pin_b, 0);
 }
 
+void LEDController::YellowBlink() {
+  for (int i = 0; i < 10; i++) {
+    SwitchOff();
+    delay(200);
+    SwitchOn();
+    Serial.println("blink");
+    SetColor(70, 20, 0);
+    delay(200);
+  }
+  SetColor(0, 0, 0);
+}
+
+void LEDController::RedBlink() {
+  for (int i = 0; i < 10; i++) {
+    SwitchOff();
+    delay(200);
+    SwitchOn();
+    Serial.println("blink");
+    SetColor(70, 0, 0);
+    delay(200);
+  }
+  SetColor(0, 0, 0);
+}

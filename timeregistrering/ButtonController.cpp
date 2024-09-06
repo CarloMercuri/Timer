@@ -1,8 +1,9 @@
-
 #include "ButtonController.h"
 #include "Arduino.h"
 #include "NetComm.h"
+
 NetComm _comm2;
+
 /**
  * Constructor for the ButtonController class.
  *
@@ -12,8 +13,7 @@ NetComm _comm2;
  * @param blueBPin: Digital pin number on the Arduino board to which the blue button pin is connected.
  */
 
-ButtonController::ButtonController(int yB_pin, int wB_pin, int rB_pin, int bB_pin)
-{
+ButtonController::ButtonController(int yB_pin, int wB_pin, int rB_pin, int bB_pin) {
   pin_yB = yB_pin;
   pin_wB = wB_pin;
   pin_rB = rB_pin;
@@ -24,10 +24,9 @@ ButtonController::ButtonController(int yB_pin, int wB_pin, int rB_pin, int bB_pi
   pinMode(pin_bB, INPUT_PULLUP);
 }
 
-void ButtonController::Interrupt(int _buttonId)
-{
-   buttonId = _buttonId;
-   unixTimestamp = 1725445282;
-   Serial.println("Connected to wifi - start send event");
-   _comm2.SendButtonEventRequest(buttonId, unixTimestamp);
+void ButtonController::Interrupt(int _buttonId) {
+  buttonId = _buttonId;
+  unixTimestamp = 1725445282;
+  Serial.println("Connected to wifi - start send event");
+  _comm2.SendButtonEventRequest(buttonId, unixTimestamp);
 }

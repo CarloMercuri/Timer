@@ -1,13 +1,8 @@
 #include "NetComm.h"
 #include "DataStorage.h"
 #include "serial_number.h"
-#include "LEDController.h"
 #include "ButtonController.h"
-
-#define BTN1_PIN 8
-#define BTN2_PIN 9
-#define BTN3_PIN 12
-#define BTN4_PIN 13
+#include "globals.h"
 
 bool pressed1 = false;
 bool pressed2 = false;
@@ -23,13 +18,9 @@ const uint16_t MESSAGES_DATA_INDEX = 80;
 
 void setup() {
    Serial.begin(9600);
-   _mainLed.SwitchOn();
-
+    _mainLed.SwitchOn();
   Serial.println("Initializing Arduino");
-  pinMode(BTN1_PIN, INPUT);
-  pinMode(BTN2_PIN, INPUT);
-  pinMode(BTN3_PIN, INPUT);
-  pinMode(BTN4_PIN, INPUT);
+
   // Initialize EEPROM with a size
   //EEPROM.begin(EEPROM.length());
   uint16_t eeprom_size = EEPROM.length();
@@ -57,28 +48,24 @@ void setup() {
 
 }
 
-<<<<<<< HEAD
-=======
-
 unsigned long lastWifiEventRun = 0;   // Track last time the WiFi event ran
-unsigned long wifiEventDelay = 3000;  // Set the desired delay for WiFi events
+unsigned long wifiEventDelay = 4000;  // Set the desired delay for WiFi events
 
 void loop() {
     // Get the current time
     unsigned long currentMillis = millis();
     
-    // Non-blocking delay to replace delay(3000)
+    // Non-blocking delay to replace delay(4000)
     if (currentMillis - lastWifiEventRun > wifiEventDelay) {
         lastWifiEventRun = currentMillis;  // Update the last run time
-        
-        // Run your existing logic here (runs every 3000ms)
+        // Run your existing logic here (runs every 4000ms)
         int wifi_status = _comm.GetConnectionStatus();
         Serial.println("=============================");
         Serial.println("Connection status: ");
         Serial.println(_comm.GetConnectionStatusFormatted());
         Serial.println("=============================");
         Serial.println("                   ");
-
+      
         switch (wifi_status) {
             case NO_CONNECTION:
                 HandleNoConnection();
@@ -93,10 +80,6 @@ void loop() {
                 break;
         }
     }
-<<<<<<< HEAD
-=======
-
->>>>>>> e321ae274e2a468e2ef83fc9ca8496d09dacea95
 
     // Check for button presses
     if (digitalRead(10) == HIGH) {
@@ -113,14 +96,13 @@ void loop() {
     }
 }
 
-
 void HandleConnectedWifi(){
-  _mainLed.SetColor(0, 255, 0);
+  _mainLed.SetColor(0, 3, 0);
     Serial.println("------- State: HandleConnectedWifi");
 }
 
 void HandleNoConnection() {
-  _mainLed.SetColor(255, 0, 0);
+  _mainLed.SetColor(12, 3, 0);
   Serial.println("------- State: HandleNoConnection");
   // WifiConfig fromEeprom = _data.readWifiData();
 
@@ -130,13 +112,12 @@ void HandleNoConnection() {
 }
 
 void HandleConnectedHotspot() {
-  _mainLed.SetColor(255, 255, 0);
+  _mainLed.SetColor(0, 0, 5);
     Serial.println("------- State: HandleConnectedHotspot");
   WifiConfig fromEeprom = _data.readWifiData();
 
   if(fromEeprom.ssid.length() > 0){ // we have wifi saved locally
      _comm.TryConnectWiFi();
-   
   } else {
     // We have no locally saved wifi data, but we are connected to the hotspot.
     // At this point we send a request to the server to see if the user has saved some
