@@ -57,6 +57,8 @@ void setup() {
 
 }
 
+<<<<<<< HEAD
+=======
 
 unsigned long lastWifiEventRun = 0;   // Track last time the WiFi event ran
 unsigned long wifiEventDelay = 3000;  // Set the desired delay for WiFi events
@@ -91,7 +93,10 @@ void loop() {
                 break;
         }
     }
+<<<<<<< HEAD
+=======
 
+>>>>>>> e321ae274e2a468e2ef83fc9ca8496d09dacea95
 
     // Check for button presses
     if (digitalRead(10) == HIGH) {
