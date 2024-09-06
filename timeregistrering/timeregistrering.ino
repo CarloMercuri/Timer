@@ -148,7 +148,6 @@ uint32_t GetCorrectTimestamp(){
 
 void HandleConnectedWifi(){
   _mainLed.SetColor(0, 120, 0);
-    Serial.println("------- State: HandleConnectedWifi");
     if(timestamp == 0){
       timestamp = _comm.SendUnixTimestampRequest();
       timestamp_system_ms = millis();

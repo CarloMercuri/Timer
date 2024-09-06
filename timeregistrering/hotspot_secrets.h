@@ -1,2 +1,2 @@
-#define HOTSPOT_SSID "AndroidAP"
-#define HOTSPOT_PW "huxk3138"
+#define HOTSPOT_SSID "TimeStamper"
+#define HOTSPOT_PW "Kode1234"
