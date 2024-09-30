@@ -14,6 +14,12 @@ uint32_t timestamp_system_ms = 0;
 
 int saved_status = 0;
 
+unsigned long currentMillis = 0;
+unsigned long blinkTimer = 0;
+const long blinkInterval = 500;
+
+bool ledState = false;
+
 const uint16_t MESSAGES_DATA_INDEX = 80;
 
 void setup() {
@@ -43,7 +49,7 @@ void loop() {
   }
     delay(2);
     // Get the current time
-    unsigned long currentMillis = millis();
+    currentMillis = millis();
     
     // Non-blocking delay to replace delay(3000)
     if (currentMillis - lastWifiEventRun > wifiEventDelay) {
@@ -77,8 +83,6 @@ void loop() {
                 break;
         }
     }
-
-
 
 }
 
@@ -158,11 +162,13 @@ void HandleConnectedWifi(){
 }
 
 void HandleNoConnection() {
-  _mainLed.SetColor(255, 0, 0);
+  nonBlockingLEDBlink();
+  //_mainLed.SetColor(255, 0, 0);
 
   if(!_comm.TryConnectWiFi()){
     _comm.TryConnectHotspot();
   }
+
 }
 
 void HandleConnectedHotspot() {
@@ -194,5 +200,22 @@ void HandleConnectedHotspot() {
     }
 
     _data.saveWifiData(c);
+  }
+}
+
+void nonBlockingLEDBlink() {
+  // Check if enough time has passed to toggle the LED state
+  if (currentMillis - blinkTimer >= blinkInterval) {
+    blinkTimer = currentMillis;  // Save the current time
+
+    // Toggle LED state
+    ledState = !ledState;
+
+    // Update the LED based on ledState
+    if (ledState) {
+      _mainLed.SetColor(255, 0, 0);  // Turn LED on (red)
+    } else {
+      _mainLed.SwitchOff();  // Turn LED off
+    }
   }
 }
